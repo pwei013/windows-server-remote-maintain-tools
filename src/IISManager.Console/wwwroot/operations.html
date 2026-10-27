@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>操作记录 · MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/app.css?v=7283488e6150963f">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script>
+  <script src="/operation-health.js?v=0236d1e07e223292" defer></script>
+  <script src="/operations.js?v=95bdaa817eefa791" defer></script>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html">服务器总览</a><a href="/">管理工作台</a><a href="/maintenance.html">配置维护</a><a href="/diagnostics.html">故障诊断</a><a href="/baselines.html">配置基线</a><a href="/operations.html" aria-current="page">操作记录</a><a href="/servers.html">接入与权限</a></nav>
+    <span class="header-caption">Windows Server 管理控制台</span>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <aside class="sidebar">
+    <div class="server-picker"><h2>AGENT 服务器 <span id="server-count" class="tab-count">0</span></h2><label class="sr-only" for="server-search">搜索 Agent 服务器</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt=""><input id="server-search" type="search" placeholder="搜索服务器名称或地址" autocomplete="off"></div></div>
+    <div id="server-list" class="server-list" aria-label="按 Agent 筛选操作记录"></div>
+    <div class="sidebar-note"><img class="ui-icon" src="/assets/fluent/shield.svg" alt=""><div><strong>保留原操作编号</strong><p>记录查询不会重放任何操作。</p></div></div>
+  </aside>
+  <main class="records-main">
+    <header class="page-header records-page-header"><div><p class="breadcrumb">管理控制台 / 操作记录</p><h1 class="sr-only">操作记录</h1></div><div class="page-actions"><button id="records-export" class="secondary" type="button" title="按当前查询条件导出，最多 5000 条">导出 CSV</button><button id="records-refresh" class="secondary" type="button"><img class="ui-icon" src="/assets/fluent/refresh.svg" alt="">刷新记录</button></div></header>
+    <div id="records-error" class="notice danger" role="alert" hidden></div>
+    <section class="workspace-card records-workspace" aria-label="操作记录查询结果">
+      <form id="records-form" class="operation-filters" role="search" aria-label="查询操作记录">
+        <div class="filter-field search-field"><label for="records-search">目标 / 操作人 / 编号</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt=""><input id="records-search" type="search" placeholder="名称、操作人或编号" maxlength="128" autocomplete="off"></div></div>
+        <div class="filter-field"><label for="records-type">操作类型</label><select id="records-type"><option value="">全部操作</option><option value="applicationPool.start">启动应用程序池</option><option value="applicationPool.stop">停止应用程序池</option><option value="applicationPool.recycle">回收应用程序池</option><option value="applicationPool.create">新建应用程序池</option><option value="applicationPool.update">编辑应用程序池</option><option value="site.update">编辑站点配置</option><option value="application.create">新建子应用</option><option value="application.update">编辑子应用</option><option value="virtualDirectory.create">新建虚拟目录</option><option value="virtualDirectory.update">编辑虚拟目录</option><option value="site.create">新建网站</option><option value="site.start">启动站点</option><option value="site.stop">停止站点</option><option value="site.restart">重新启动站点</option><option value="windowsService.start">启动 Windows 服务</option><option value="windowsService.stop">停止 Windows 服务</option><option value="windowsService.restart">重新启动 Windows 服务</option><option value="windowsService.create">创建 Windows 服务</option><option value="windowsService.updateStartType">修改服务启动类型</option></select></div>
+        <div class="filter-field"><label for="records-state">执行状态</label><select id="records-state"><option value="">全部状态</option><option value="queued">等待执行</option><option value="running">执行中</option><option value="succeeded">执行成功</option><option value="failed">执行失败</option><option value="partial">部分完成</option><option value="unknown">结果未知</option><option value="expired">已过期</option></select></div>
+        <div class="filter-field"><label for="records-from">提交时间起</label><input id="records-from" type="datetime-local"></div>
+        <div class="filter-field"><label for="records-to">提交时间止</label><input id="records-to" type="datetime-local"></div>
+        <div class="operation-query-actions"><button id="records-reset" class="secondary" type="button">重置</button><button id="records-query" type="submit"><img class="ui-icon" src="/assets/fluent/search.svg" alt="">查询</button></div>
+      </form>
+      <div class="table-scroll"><table class="records-table"><caption class="sr-only">操作记录查询结果</caption><thead><tr><th scope="col">操作 / 目标</th><th scope="col">Agent 服务器</th><th id="record-operator-column" scope="col">操作人</th><th scope="col">执行状态</th><th scope="col">平台保存</th><th scope="col">提交 / 最近核对</th><th scope="col">详情</th></tr></thead><tbody id="records-body"></tbody></table></div>
+      <p id="records-empty" class="empty" hidden>没有匹配的操作记录，请调整查询条件。</p>
+      <div class="pagination"><div class="pagination-summary"><p id="records-results" class="records-caption" role="status" aria-live="polite">正在读取操作记录…</p><label class="page-size" for="records-size">每页<select id="records-size"><option value="10">10 条</option><option value="20" selected>20 条</option><option value="50">50 条</option></select></label></div><nav class="pagination-controls" aria-label="操作记录分页"><button id="records-prev" type="button" class="secondary" disabled>上一页</button><span id="records-pages" class="pagination-controls"></span><span id="records-page-info" class="small muted">第 1 页</span><button id="records-next" type="button" class="secondary" disabled>下一页</button></nav></div>
+    </section>
+  </main>
+  <dialog id="record-dialog" aria-labelledby="record-dialog-title">
+    <div class="record-detail"><div class="dialog-header"><div><p class="eyebrow">操作详情</p><h2 id="record-dialog-title">操作记录</h2></div><button id="record-close" type="button" class="secondary">关闭</button></div><dl id="record-details" class="task-details"></dl><p id="record-operator-note" class="muted small" hidden>这条历史记录未保存操作人，无法从已有记录还原。</p><p class="muted small">这里显示控制台最近保存的状态。按原编号核对会向该 Agent 读取执行结果，不会再次提交操作。</p><section id="record-health-section" hidden><div id="record-health-follow-up" class="operation-health" aria-label="业务健康验证" aria-live="polite"></div><button id="record-health-refresh" type="button" class="secondary small-button">刷新验证记录</button></section><div class="dialog-actions"><a id="record-target-link" class="button-link secondary" href="/" hidden>查看服务</a><a id="record-query-link" class="button-link" href="/">进入工作台按原编号核对</a></div></div>
+  </dialog>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form">
+      <div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div>
+      <p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p>
+      <div class="password-fields">
+        <label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-length-hint" required><span id="password-length-hint" class="muted small">请输入12–128个字符</span></label>
+        <label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+      </div>
+      <label class="password-visibility" for="password-visible"><input id="password-visible" type="checkbox">显示密码</label>
+      <p id="password-message" class="notice danger" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div>
+    </form>
+  </dialog>
+</body>
+</html>

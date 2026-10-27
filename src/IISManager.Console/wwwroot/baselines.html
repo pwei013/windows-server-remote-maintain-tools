@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>配置巡检 · MKY 服务器远程管理工具</title><link rel="icon" href="/assets/auth/company-logo.png"><link rel="stylesheet" href="/app.css?v=7283488e6150963f"><link rel="stylesheet" href="/overview.css?v=7c84fae5ac727df7"><script src="/auth-session.js?v=d44bec983677eafc" defer></script><script src="/baselines.js?v=dac1f4499ea4d7b8" defer></script></head><body class="overview-page">
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html">服务器总览</a><a href="/">管理工作台</a><a href="/maintenance.html">配置维护</a><a href="/diagnostics.html">故障诊断</a><a href="/baselines.html" aria-current="page">配置基线</a><a href="/operations.html">操作记录</a><a href="/servers.html">接入与权限</a></nav>
+    <span class="header-caption">Windows Server 管理控制台</span>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <main class="overview-main">
+    <header class="page-header"><div><p class="breadcrumb">管理控制台 / 配置巡检</p><h1>配置基线与差异巡检</h1><p class="muted">比较已确认配置与当前状态，发现控制台外的手工变更</p></div></header>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section class="workspace-card baseline-workspace">
+      <div class="page-actions"><label for="baseline-server">服务器<select id="baseline-server"></select></label><button id="baseline-read" type="button" class="secondary">只读巡检</button><button id="baseline-save-open" type="button">保存为基线</button><button id="baseline-export" type="button" class="secondary">导出配置与差异</button></div>
+      <p id="baseline-status" role="status">请选择服务器并执行只读巡检。</p><p id="baseline-permission" class="muted small" hidden>当前用户可查看巡检结果，保存基线需要配置权限。</p><dl id="baseline-details" class="task-details"></dl>
+      <div class="table-scroll"><table><thead><tr><th>配置路径</th><th>基线值</th><th>当前值</th></tr></thead><tbody id="baseline-changes"></tbody></table></div><p id="baseline-truncated" class="notice" hidden>差异超过 500 项，仅展示前 500 项；可导出完整前后配置进一步核对。</p>
+      <p class="muted small">巡检忽略运行状态、采集时间和临时指纹；保存只更新本工具的配置基线。</p>
+    </section>
+  </main>
+  <dialog id="baseline-save-dialog" class="health-dialog" aria-labelledby="baseline-save-title"><form id="baseline-save-form"><div class="dialog-header"><h2 id="baseline-save-title">保存已确认的配置基线</h2><button id="baseline-save-close" type="button" class="icon-button" aria-label="关闭">×</button></div><p id="baseline-save-target" class="muted small"></p><label for="baseline-label">说明<input id="baseline-label" type="text" maxlength="100" placeholder="例如：验收后的生产配置"></label><p><label><input id="baseline-confirm" type="checkbox">我已核对本次配置，确认以此替换当前基线</label></p><p id="baseline-save-error" class="notice danger" hidden></p><div class="dialog-actions"><button id="baseline-save-cancel" type="button" class="secondary">取消</button><button id="baseline-save-confirm" type="submit">确认保存</button></div></form></dialog>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form">
+      <div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div>
+      <p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p>
+      <div class="password-fields">
+        <label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-length-hint" required><span id="password-length-hint" class="muted small">请输入12–128个字符</span></label>
+        <label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+      </div>
+      <label class="password-visibility" for="password-visible"><input id="password-visible" type="checkbox">显示密码</label>
+      <p id="password-message" class="notice danger" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div>
+    </form>
+  </dialog>
+</body></html>

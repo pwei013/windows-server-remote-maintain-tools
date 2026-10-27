@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="../Shared/IntranetSourcePolicy.cs" Link="Networking/IntranetSourcePolicy.cs" />
+    <ProjectReference Include="../IISManager.Contracts/IISManager.Contracts.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

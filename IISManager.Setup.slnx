@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IISManager.Setup.Core/IISManager.Setup.Core.csproj" />
+    <Project Path="src/IISManager.Setup/IISManager.Setup.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IISManager.Setup.SelfTests/IISManager.Setup.SelfTests.csproj" />
+  </Folder>
+</Solution>

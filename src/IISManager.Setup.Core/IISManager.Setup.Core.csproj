@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="../Shared/IntranetSourcePolicy.cs" Link="Networking/IntranetSourcePolicy.cs" />
+  </ItemGroup>
+</Project>

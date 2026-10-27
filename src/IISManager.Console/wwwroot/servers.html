@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>接入与权限 · MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/app.css?v=7283488e6150963f"><link rel="stylesheet" href="/servers.css?v=6e4df1eb82c47636">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script><script src="/servers.js?v=c6afcf086cf9ba31" defer></script>
+</head>
+<body class="administration-page">
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html">服务器总览</a><a href="/">管理工作台</a><a href="/maintenance.html">配置维护</a><a href="/diagnostics.html">故障诊断</a><a href="/baselines.html">配置基线</a><a href="/operations.html">操作记录</a><a href="/servers.html" aria-current="page">接入与权限</a></nav>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <main class="administration-main">
+    <header class="page-header"><div><p class="breadcrumb">管理控制台 / 管理员设置</p><h1>接入与权限</h1><p class="muted">集中管理服务器接入与用户操作范围</p></div><button id="admin-refresh" class="secondary" type="button" data-admin-action>重新读取</button></header>
+    <p id="admin-identity" class="muted small"></p><div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <section id="admin-unavailable" class="workspace-card administration-empty" hidden><h2>当前账号没有管理权限</h2><p>现有服务器操作范围由管理员分配。首次启用时，请由操作员在 Console 配置中登记已知的 AppId 和 UserId，再重启 Console。</p></section>
+    <div id="admin-content" hidden>
+      <p id="admin-protection" class="notice administration-banner"></p>
+      <p id="admin-pending" class="notice administration-banner" hidden>接入配置已保存，人工重启 Console 后生效。请先核对未完成任务并保留备份。</p>
+      <section class="workspace-card" aria-labelledby="server-admin-title">
+        <div class="section-header"><div><h2 id="server-admin-title">Agent 接入</h2><p class="muted">新增和编辑均先预览，保存后人工重启 Console 生效</p></div><button id="server-add" type="button" data-admin-action>新增服务器</button></div>
+        <div class="administration-toolbar"><label for="server-admin-search">搜索服务器、项目或环境<input id="server-admin-search" type="search" maxlength="128" placeholder="名称 / 编号 / 项目 / 环境"></label><p id="server-admin-count" class="muted small" role="status"></p></div>
+        <div class="table-scroll"><table class="managed-servers-table"><caption class="sr-only">已配置和待生效的 Agent 接入</caption><thead><tr><th scope="col">服务器 / 编号</th><th scope="col">项目 / 环境</th><th scope="col">接入地址</th><th scope="col">认证 / 生效状态</th><th scope="col">操作</th></tr></thead><tbody id="server-admin-body"></tbody></table></div><p id="server-admin-empty" class="empty" hidden>没有匹配的接入配置。</p>
+      </section>
+      <section class="workspace-card" aria-labelledby="policy-title">
+        <div class="section-header"><div><h2 id="policy-title">用户与服务器权限</h2><p id="policy-summary" class="muted"></p></div><button id="policy-edit" type="button" data-admin-action>编辑权限策略</button></div>
+        <p class="administration-footnote">查看、启停/回收、修改配置分别授权；严格模式下未授权的服务器不可见。管理员可管理接入和授权，保存后立即生效。</p>
+        <div class="table-scroll"><table class="policy-summary-table"><caption class="sr-only">当前授权策略</caption><thead><tr><th scope="col">AppId / UserId</th><th scope="col">范围</th><th scope="col">权限</th></tr></thead><tbody id="policy-body"></tbody></table></div>
+      </section>
+    </div>
+  </main>
+  <dialog id="server-editor" class="administration-dialog" aria-labelledby="server-editor-title">
+    <form id="server-form"><div class="dialog-header"><h2 id="server-editor-title">新增服务器</h2><button id="server-close" type="button" class="icon-button" aria-label="关闭接入编辑">×</button></div>
+      <p class="muted small">连接测试只读取 Agent 信息。HTTP 仅用于可信管理网络；HTTPS 保留双向证书与正常证书验证。</p>
+      <div class="administration-form-grid"><label for="managed-id">唯一编号<input id="managed-id" required maxlength="64" pattern="[A-Za-z0-9_-]{1,64}" autocomplete="off"><span class="muted small">已有编号不可改；不会删除或覆盖历史归属。</span></label><label for="managed-name">显示名称<input id="managed-name" required maxlength="100" autocomplete="off"></label><label for="managed-group">项目分组<input id="managed-group" maxlength="64" autocomplete="off"></label><label for="managed-environment">环境<input id="managed-environment" maxlength="64" autocomplete="off"></label><label class="full-width" for="managed-url">Agent 根地址<input id="managed-url" type="url" required maxlength="2048" placeholder="http://server.example:7444/" autocomplete="off"><span class="muted small">只接受 HTTP/HTTPS 根地址，不含账号、查询参数或片段。</span></label><label class="full-width" id="managed-token-area" for="managed-token">HTTP 访问 Token<input id="managed-token" type="password" maxlength="8192" autocomplete="new-password" spellcheck="false"><span class="muted small">同一地址留空保留原凭据；地址改变时须重新输入目标的 Token。</span></label><label class="full-width" id="managed-certificate-area" for="managed-certificate">HTTPS 服务端证书指纹<input id="managed-certificate" maxlength="120" autocomplete="off" placeholder="服务器证书 SHA1 指纹"><span class="muted small">Console 客户端证书沿用当前启动配置。</span></label></div>
+      <p id="server-test-result" class="notice" role="status" hidden></p><p id="server-form-error" class="notice danger" role="alert" hidden></p>
+      <section id="server-preview" class="administration-preview" aria-label="接入配置差异" hidden><h3>本次变更</h3><div id="server-changes"></div><p class="muted small">保存后不会自动重启服务。当前生效连接继续使用原配置，待人工重启 Console 后切换。</p></section>
+      <div class="dialog-actions"><button id="server-cancel" type="button" class="secondary">取消</button><button id="server-test" type="button" class="secondary">测试连接</button><button id="server-preview-button" type="button" class="secondary">预览变更</button><button id="server-save" type="submit" disabled>确认保存，重启后生效</button><button id="server-reconcile" type="button" class="secondary" hidden>关闭并重新读取核对</button></div>
+    </form>
+  </dialog>
+  <dialog id="policy-editor" class="administration-dialog policy-editor" aria-labelledby="policy-editor-title">
+    <form id="policy-form"><div class="dialog-header"><h2 id="policy-editor-title">编辑权限策略</h2><button id="policy-close" type="button" class="icon-button" aria-label="关闭权限编辑">×</button></div>
+      <label class="strict-policy-toggle" for="policy-enabled"><input id="policy-enabled" type="checkbox">开启严格授权：未分配服务器和动作默认拒绝</label>
+      <p class="muted small">关闭严格授权时，登录用户沿用原服务器管理权限；接入与授权管理仍仅限管理员。保存必须保留当前操作者管理员身份。</p>
+      <div class="section-header"><h3>管理员</h3><button id="admin-row-add" class="secondary small-button" type="button">添加管理员</button></div><div id="admin-editor-rows" class="principal-rows"></div>
+      <div class="section-header"><h3>服务器与动作范围</h3><button id="grant-row-add" class="secondary small-button" type="button">添加用户授权</button></div><p class="muted small">使用现有用户的 AppId 和 UserId。服务器可多选；授权不会创建用户或更改上游账号。</p><div id="grant-editor-rows" class="grant-rows"></div>
+      <p id="policy-form-error" class="notice danger" role="alert" hidden></p><section id="policy-preview" class="administration-preview" aria-label="权限配置差异" hidden><h3>本次权限变更</h3><div id="policy-changes"></div><p class="muted small">确认保存后立即生效，可能使其他用户看不到服务器或无法执行相关动作。</p></section>
+      <div class="dialog-actions"><button id="policy-cancel" type="button" class="secondary">取消</button><button id="policy-preview-button" type="button" class="secondary">预览权限变更</button><button id="policy-save" type="submit" disabled>确认保存权限</button><button id="policy-reconcile" type="button" class="secondary" hidden>关闭并重新读取核对</button></div>
+    </form>
+  </dialog>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form"><div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div><p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p><div class="password-fields"><label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label><label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-length-hint" required><span id="password-length-hint" class="muted small">请输入12–128个字符</span></label><label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label></div><label class="password-visibility" for="password-visible"><input id="password-visible" type="checkbox">显示密码</label><p id="password-message" class="notice danger" role="alert" hidden></p><div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div></form>
+  </dialog>
+</body>
+</html>

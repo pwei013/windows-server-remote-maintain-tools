@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/app.css?v=cc1a13fa8969145c">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script>
+  <script src="/operation-health.js?v=0236d1e07e223292" defer></script>
+  <script src="/app.js?v=c245e6ccef8190a7" defer></script>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html">服务器总览</a><a href="/" aria-current="page">管理工作台</a><a href="/maintenance.html">配置维护</a><a href="/diagnostics.html">故障诊断</a><a href="/baselines.html">配置基线</a><a href="/operations.html">操作记录</a><a href="/servers.html">接入与权限</a></nav>
+    <span class="header-caption">Windows Server 管理控制台</span>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <aside class="sidebar">
+    <div class="server-picker"><h2>AGENT 服务器 <span id="server-count" class="tab-count">0</span></h2><label class="sr-only" for="server-search">搜索 Agent 服务器</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt=""><input id="server-search" type="search" placeholder="搜索服务器名称或地址" autocomplete="off"></div></div>
+    <div id="server-list" class="server-list" aria-label="Agent 服务器列表"></div>
+    <div id="resource-navigation" class="resource-navigation"><div class="resource-tabs" role="tablist" aria-label="当前服务器资源类型" aria-orientation="vertical"><button id="sites-tab" class="resource-tab" type="button" role="tab" aria-selected="false" aria-controls="sites-panel" tabindex="-1"><img class="ui-icon" src="/assets/fluent/globe.svg" alt="">站点<span id="sites-tab-count" class="tab-count">—</span></button><button id="pools-tab" class="resource-tab" type="button" role="tab" aria-selected="true" aria-controls="pools-panel" tabindex="0"><img class="ui-icon" src="/assets/fluent/apps.svg" alt="">应用程序池<span id="pools-tab-count" class="tab-count">—</span></button><button id="services-tab" class="resource-tab" type="button" role="tab" aria-selected="false" aria-controls="services-panel" tabindex="-1"><img class="ui-icon" src="/assets/fluent/server.svg" alt="">Windows 服务<span id="services-tab-count" class="tab-count">—</span></button></div></div>
+    <div class="sidebar-note"><img class="ui-icon" src="/assets/fluent/shield.svg" alt=""><div><strong>操作前查看配置差异</strong><p id="server-mode">请选择 Agent 服务器</p></div></div>
+  </aside>
+  <main>
+    <header class="page-header"><div><p class="breadcrumb"><span id="server-title">MKY 服务器远程管理工具</span> / <span id="resource-breadcrumb">应用程序池</span></p><h1 id="resource-heading">应用程序池</h1></div><div class="page-actions"><button id="refresh-button" class="secondary"><img class="ui-icon" src="/assets/fluent/refresh.svg" alt="">刷新快照</button><button id="create-pool-button" type="button"><img class="ui-icon" src="/assets/fluent/add.svg" alt="">新建应用程序池</button><button id="create-site-button" type="button" hidden><img class="ui-icon" src="/assets/fluent/add.svg" alt="">新建网站</button><button id="create-service-button" type="button" hidden><img class="ui-icon" src="/assets/fluent/add.svg" alt="">创建 Windows 服务</button></div></header>
+    <div class="server-meta"><p class="muted" id="machine-info">正在读取服务器清单…</p>
+    <div class="status-bar"><span id="connection-status" class="badge">未连接</span><span id="collected-at">尚未采集</span><span id="snapshot-summary"></span></div>
+    </div>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <div id="task-lock-notice" class="notice task-lock-notice" hidden>
+      <p id="task-lock-message" role="status" aria-live="polite"></p>
+      <div class="task-lock-actions"><a href="#task-section">查看操作结果并核对</a><button id="task-lock-release" type="button" class="secondary" hidden>已只读核实，保留记录并继续管理</button></div>
+    </div>
+    <p id="topology-status" class="topology-status muted small" role="status" aria-live="polite" hidden></p>
+    <section id="resource-overview" class="overview" aria-label="当前服务器 IIS 资源总览">
+      <span>应用池 <strong id="overview-pools">—</strong></span><span>站点 <strong id="overview-sites">—</strong></span><span>运行中 <strong id="overview-running">—</strong></span><span>已停止 <strong id="overview-stopped">—</strong></span>
+    </section>
+    <section class="workspace-card resource-workspace" aria-label="服务器资源管理">
+      <section id="pools-panel" role="tabpanel" aria-labelledby="pools-tab" tabindex="0">
+        <div class="filters pool-filters" role="search" aria-label="筛选应用程序池">
+          <div class="filter-field search-field"><label for="pool-search">名称 / 关联应用</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt="" aria-hidden="true"><input id="pool-search" type="search" placeholder="搜索应用池名称或关联应用" autocomplete="off"></div></div>
+          <div class="filter-field pool-state-field"><span class="filter-label">运行状态</span><div id="pool-state-segments" class="segmented" role="group" aria-label="快速筛选应用池状态"><button type="button" data-pool-state="" aria-pressed="true">全部</button><button type="button" data-pool-state="Started" aria-pressed="false">运行中</button><button type="button" data-pool-state="Stopped" aria-pressed="false">已停止</button></div></div>
+          <div class="filter-field"><label for="pool-runtime">.NET CLR 版本</label><select id="pool-runtime"><option value="">全部版本</option><option value="none">无托管代码</option><option value="v4.0">v4.0</option><option value="v2.0">v2.0</option></select></div>
+        </div>
+        <div class="filter-tools"><p id="pool-results" role="status" aria-live="polite">等待服务器快照</p><div class="filter-extra"><label class="sr-only" for="pool-state">所有运行状态</label><select id="pool-state" aria-label="所有运行状态"><option value="">所有运行状态</option><option value="Started">运行中</option><option value="Stopped">已停止</option><option value="Starting">启动中</option><option value="Stopping">停止中</option><option value="Unknown">未知</option></select><button id="pool-reset" type="button" class="text-button">重置筛选</button></div></div>
+        <div class="table-scroll"><table class="pools-table"><caption class="sr-only">应用程序池查询结果</caption><thead><tr><th scope="col">名称 / 关联应用</th><th scope="col">状态</th><th scope="col">运行配置</th><th scope="col">启动 / 空闲</th><th scope="col">应用池操作</th></tr></thead><tbody id="pools-body"></tbody></table></div>
+        <p id="pools-empty" class="empty" hidden>当前服务器没有应用程序池。</p>
+      </section>
+      <section id="sites-panel" role="tabpanel" aria-labelledby="sites-tab" tabindex="0" hidden>
+        <div class="filters site-filters" role="search" aria-label="筛选站点">
+          <div class="filter-field search-field"><label for="site-search">站点 / 应用 / 别名 / 标签 / 域名 / 目录</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt="" aria-hidden="true"><input id="site-search" type="search" placeholder="搜索站点、应用、别名、标签、域名或目录" autocomplete="off"></div></div>
+          <div class="site-tag-filter">
+            <div class="site-tag-filter-control"><span class="site-tag-filter-label">标签</span><div id="site-filter-tags" class="tag-chips" aria-label="已选筛选标签"></div><button id="site-tags-clear" class="icon-button tag-filter-clear" type="button" aria-label="清空标签筛选" hidden><img class="ui-icon" src="/assets/fluent/dismiss.svg" alt=""></button><button id="site-tags-toggle" class="icon-button tag-filter-toggle" type="button" aria-label="选择筛选标签" aria-expanded="false" aria-controls="site-tag-options"><img class="ui-icon" src="/assets/fluent/chevron-down.svg" alt=""></button></div>
+            <div id="site-tag-options" class="tag-filter-popover" hidden><label class="sr-only" for="site-tag-search">搜索可选标签</label><input id="site-tag-search" type="search" placeholder="搜索已有标签" autocomplete="off"><div id="site-tag-option-list" class="tag-option-list" role="group" aria-label="可选筛选标签"></div><p class="muted small">多选时匹配任一标签</p></div>
+          </div>
+          <button id="site-reset" type="button" class="secondary site-reset">重置筛选</button>
+          <div class="site-secondary-filters">
+            <div class="filter-field"><label for="site-state">运行状态</label><select id="site-state"><option value="">全部状态</option><option value="Started">运行中</option><option value="Stopped">已停止</option><option value="Starting">启动中</option><option value="Stopping">停止中</option><option value="Unknown">未知</option></select></div>
+            <div class="filter-field"><label for="site-pool">应用程序池</label><select id="site-pool"><option value="">全部应用程序池</option></select></div>
+            <div class="filter-field"><label for="site-protocol">绑定协议</label><select id="site-protocol"><option value="">全部协议</option><option value="http">HTTP</option><option value="https">HTTPS</option></select></div>
+            <div class="filter-field"><label for="site-port">绑定端口</label><input id="site-port" type="text" inputmode="numeric" placeholder="全部端口" autocomplete="off" aria-describedby="site-port-hint"></div>
+          </div>
+        </div>
+        <div class="filter-tools"><div><p id="site-results" role="status" aria-live="polite">等待服务器快照</p><p id="site-port-hint" class="filter-hint">可留空，或填写 1–65535</p></div></div>
+        <div id="site-annotation-status-area" class="annotation-status-area" hidden><p id="site-annotation-status" class="muted small" role="status" aria-live="polite"></p><button id="site-annotations-retry" type="button" class="text-button">重试读取</button></div>
+        <div class="table-scroll"><table class="sites-table"><caption class="sr-only">站点查询结果</caption><thead><tr><th scope="col">站点（别名 / IIS 名称）</th><th scope="col">站点状态</th><th scope="col">根应用池 / 根物理目录</th><th scope="col">绑定 / 应用地址</th><th scope="col">站点操作</th></tr></thead><tbody id="sites-body"></tbody></table></div>
+        <p id="sites-empty" class="empty" hidden>当前服务器没有网站。</p>
+      </section>
+      <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" tabindex="0" hidden>
+        <div class="filters service-filters" role="search" aria-label="筛选 Windows 服务">
+          <div class="filter-field search-field"><label for="service-search">服务名称 / 显示名称</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt=""><input id="service-search" type="search" placeholder="搜索服务名称或显示名称" autocomplete="off"></div></div>
+          <div class="filter-field"><label for="service-state">运行状态</label><select id="service-state"><option value="">全部状态</option><option value="Running">运行中</option><option value="Stopped">已停止</option><option value="StartPending">启动中</option><option value="StopPending">停止中</option><option value="Paused">已暂停</option><option value="PausePending">暂停中</option><option value="ContinuePending">恢复中</option><option value="Unknown">未知</option></select></div>
+          <div class="filter-field"><label for="service-start-type">启动类型</label><select id="service-start-type"><option value="">全部类型</option><option value="Automatic">自动</option><option value="AutomaticDelayed">自动（延迟启动）</option><option value="Manual">手动</option><option value="Disabled">禁用</option><option value="Unknown">未知</option></select></div>
+        </div>
+        <div class="filter-tools"><p id="service-results" role="status" aria-live="polite">等待服务器服务快照</p><div class="filter-extra"><button id="service-reset" type="button" class="text-button">重置筛选</button><button id="service-retry" type="button" class="secondary small-button">刷新服务</button></div></div>
+        <p id="services-status" class="service-status small muted" role="status" aria-live="polite"></p>
+        <p id="service-create-reason" class="service-status small muted" hidden></p>
+        <div class="table-scroll"><table class="services-table"><caption class="sr-only">Windows 服务查询结果</caption><thead><tr><th scope="col">服务 / 详情</th><th scope="col">状态</th><th scope="col">启动类型</th><th scope="col">运行账号</th><th scope="col">操作</th></tr></thead><tbody id="services-body"></tbody></table></div>
+        <p id="services-empty" class="empty" hidden>连接服务器后显示 Windows 服务。</p>
+      </section>
+      <div class="workspace-note"><img class="ui-icon" src="/assets/fluent/shield.svg" alt=""><p>更改前先核对配置差异与影响。提交后可在<a href="/operations.html">操作记录</a>中按原编号核对结果。</p></div>
+    </section>
+    <section id="task-section" class="workspace-card" hidden>
+      <div class="section-header"><div><h2>操作结果</h2><p id="task-status" role="status" aria-live="polite"></p></div><button id="query-task-button" class="secondary">按原编号核对</button></div>
+      <dl class="task-details"><dt>操作编号</dt><dd id="task-id"></dd><dt>操作人</dt><dd id="task-operator"></dd><dt>动作 / 目标</dt><dd id="task-target"></dd><dt>平台保存</dt><dd id="task-persistence"></dd><dt>最新核对</dt><dd id="task-updated"></dd></dl>
+      <button id="task-service-target" type="button" class="text-button task-service-target" hidden>查看服务</button>
+      <p id="task-message" class="notice" hidden></p>
+      <div id="release-task-area" class="release-task" hidden><p class="small muted">完成现场只读核实后，可保留此记录并继续管理。原操作状态仍保持未知或部分完成，控制台不会重放。</p><button id="release-task-button" class="secondary">已只读核实，保留记录并继续管理</button></div>
+      <section id="task-health-follow-up" class="operation-health" aria-label="业务健康验证" aria-live="polite" hidden></section>
+      <details><summary>保留的提交参数与 Agent 结果</summary><pre id="task-json"></pre></details>
+    </section>
+  </main>
+  <aside id="site-annotation-editor" class="site-annotation-editor" role="dialog" aria-modal="false" aria-labelledby="annotation-editor-title" hidden>
+    <form id="site-annotation-form" class="annotation-editor-form">
+      <div class="annotation-editor-header"><h2 id="annotation-editor-title">别名与标签</h2><button id="annotation-close" type="button" class="icon-button" aria-label="关闭别名与标签编辑"><img class="ui-icon" src="/assets/fluent/dismiss.svg" alt=""></button></div>
+      <div class="annotation-editor-content">
+        <div class="annotation-field"><label for="annotation-site-name">IIS 站点名称</label><input id="annotation-site-name" type="text" readonly aria-describedby="annotation-site-name-hint"><p id="annotation-site-name-hint" class="muted small">这是 IIS 中的真实站点名称，不会被修改。</p></div>
+        <div id="annotation-application-field" class="annotation-field" hidden><label for="annotation-application-path">IIS 应用路径</label><input id="annotation-application-path" type="text" readonly aria-describedby="annotation-application-hint"><p id="annotation-application-hint" class="muted small">这是所属站点下的真实应用路径，不会被修改。</p></div>
+        <div class="annotation-field"><label id="annotation-alias-label" for="annotation-alias">站点别名</label><input id="annotation-alias" type="text" maxlength="100" autocomplete="off" placeholder="输入便于识别的站点别名" aria-describedby="annotation-alias-hint"><p id="annotation-alias-hint" class="muted small">仅用于识别和管理，可留空，最多 100 个字符。</p></div>
+        <div class="annotation-field"><label for="annotation-tag-input">标签</label><div id="annotation-draft-tags" class="annotation-draft-tags tag-chips" aria-label="当前站点标签"></div><div class="annotation-tag-input-control"><input id="annotation-tag-input" type="text" maxlength="40" autocomplete="off" placeholder="选择或输入标签…" aria-describedby="annotation-tags-hint" aria-expanded="false" aria-controls="annotation-tag-suggestions"><button id="annotation-tag-toggle" type="button" class="icon-button" aria-label="展开已有标签" aria-expanded="false" aria-controls="annotation-tag-suggestions"><img class="ui-icon" src="/assets/fluent/chevron-down.svg" alt=""></button></div><p id="annotation-tags-hint" class="muted small">输入标签后按 Enter 添加；最多 20 个标签，每个最多 40 个字符。</p><div id="annotation-tag-suggestions" class="annotation-tag-suggestions" role="group" aria-label="选择已有标签" hidden></div></div>
+        <div class="annotation-recommendations"><h3>推荐标签</h3><div id="annotation-recommended-tags" class="tag-chips"></div><p id="annotation-no-recommendations" class="muted small" hidden>暂无其他已有标签，可直接输入新标签。</p></div>
+        <p id="annotation-editor-status" class="muted small" role="status" aria-live="polite"></p><p id="annotation-editor-error" class="notice danger" role="alert" hidden></p><button id="annotation-reconcile" type="button" class="text-button" hidden>读取最新版本并保留草稿</button>
+      </div>
+      <div class="annotation-editor-actions"><button id="annotation-cancel" type="button" class="secondary">取消</button><button id="annotation-save" type="submit">保存</button></div>
+    </form>
+  </aside>
+  <dialog id="resource-dialog" class="resource-dialog" aria-labelledby="resource-dialog-title">
+    <div class="resource-dialog-content">
+      <div class="dialog-header"><div><p class="eyebrow">APPLICATIONS &amp; DIRECTORIES</p><h2 id="resource-dialog-title">站点应用与虚拟目录</h2></div><button id="resource-close" type="button" class="icon-button" aria-label="关闭应用与目录详情">×</button></div>
+      <p id="resource-dialog-description" class="muted small"></p>
+      <div class="resource-dialog-tools"><div class="filter-field"><label for="resource-search">应用路径 / 目录 / 应用池</label><input id="resource-search" type="search" placeholder="搜索应用、虚拟目录或物理路径" autocomplete="off"></div><button id="resource-retry" type="button" class="secondary">刷新应用与目录</button></div>
+      <p id="resource-status" class="muted small" role="status" aria-live="polite"></p>
+      <p id="resource-summary" class="small" role="status" aria-live="polite"></p>
+      <div id="resource-tree"></div>
+      <p class="muted small">应用包含根应用 /；附加虚拟目录不重复计算各应用的根目录映射。访问地址由浏览器打开，应用池和站点状态不代表业务健康。</p>
+    </div>
+  </dialog>
+  <dialog id="service-dialog" class="resource-dialog" aria-labelledby="service-dialog-title">
+    <div class="resource-dialog-content"><div class="dialog-header"><div><p class="eyebrow">WINDOWS SERVICE</p><h2 id="service-dialog-title">Windows 服务详情</h2></div><button id="service-close" type="button" class="icon-button" aria-label="关闭服务详情">×</button></div><p id="service-detail-status" class="muted small" role="status" aria-live="polite"></p><dl id="service-details" class="service-details"></dl><div id="service-detail-actions" class="dialog-actions"></div></div>
+  </dialog>
+  <dialog id="operation-dialog" aria-labelledby="dialog-title">
+    <form id="operation-form">
+      <div class="dialog-header"><div><p class="eyebrow">CHANGE REQUEST</p><h2 id="dialog-title">操作预检查</h2></div><button id="close-dialog" type="button" class="icon-button" aria-label="关闭">×</button></div>
+      <p id="dialog-description" class="muted"></p>
+      <div id="form-fields" class="form-fields"></div>
+      <p id="form-error" class="notice danger" role="alert" hidden></p>
+      <section id="validation-section" class="validation" hidden>
+        <h3>预检查结果</h3><p id="validation-state"></p>
+        <div id="validation-errors"></div><div id="validation-warnings"></div>
+        <h4>变更差异</h4><div id="validation-changes"></div>
+        <div id="validation-applications-area"><h4>受影响应用</h4><div id="validation-applications"></div></div>
+        <div id="validation-services-area" hidden><h4>受影响服务</h4><div id="validation-services"></div></div>
+        <h4>拟提交配置</h4><pre id="validation-proposed"></pre>
+        <h4>配置指纹</h4><code id="validation-fingerprint"></code>
+        <p class="small muted">提交时 Agent 会再次核对指纹与有效期。配置发生变化时必须重新预检查。</p>
+      </section>
+      <div class="dialog-actions"><button id="validate-button" type="submit" class="secondary">执行预检查</button><button id="submit-operation-button" type="button" hidden>确认并提交一次</button></div>
+    </form>
+  </dialog>
+  <dialog id="inline-pool-operation-dialog" aria-labelledby="inline-pool-dialog-title">
+    <form id="inline-pool-operation-form">
+      <div class="dialog-header"><div><p class="eyebrow">APPLICATION POOL</p><h2 id="inline-pool-dialog-title">新建应用程序池</h2></div><button id="inline-pool-close-dialog" type="button" class="icon-button" aria-label="关闭新建应用程序池">×</button></div>
+      <p id="inline-pool-dialog-description" class="muted"></p>
+      <div id="inline-pool-form-fields" class="form-fields"></div>
+      <p id="inline-pool-form-error" class="notice danger" role="alert" hidden></p>
+      <section id="inline-pool-validation-section" class="validation" hidden>
+        <h3>预检查结果</h3><p id="inline-pool-validation-state"></p>
+        <div id="inline-pool-validation-errors"></div><div id="inline-pool-validation-warnings"></div>
+        <h4>变更差异</h4><div id="inline-pool-validation-changes"></div>
+        <h4>受影响应用</h4><div id="inline-pool-validation-applications"></div>
+        <h4>拟提交配置</h4><pre id="inline-pool-validation-proposed"></pre>
+        <h4>配置指纹</h4><code id="inline-pool-validation-fingerprint"></code>
+        <p class="small muted">提交时 Agent 会再次核对指纹与有效期。配置发生变化时必须重新预检查。</p>
+      </section>
+      <div class="dialog-actions"><button id="inline-pool-validate-button" type="submit" class="secondary">执行预检查</button><button id="inline-pool-submit-operation-button" type="button" hidden>确认并创建</button></div>
+    </form>
+  </dialog>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form">
+      <div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div>
+      <p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p>
+      <div class="password-fields">
+        <label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-length-hint" required><span id="password-length-hint" class="muted small">请输入12–128个字符</span></label>
+        <label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+      </div>
+      <label class="password-visibility" for="password-visible"><input id="password-visible" type="checkbox">显示密码</label>
+      <p id="password-message" class="notice danger" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div>
+    </form>
+  </dialog>
+</body>
+</html>

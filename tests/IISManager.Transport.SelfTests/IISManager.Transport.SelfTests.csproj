@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/IISManager.Core/IISManager.Core.csproj" />
+    <ProjectReference Include="../../src/IISManager.Agent/IISManager.Agent.csproj" />
+    <ProjectReference Include="../../src/IISManager.Console/IISManager.Console.csproj" />
+  </ItemGroup>
+</Project>

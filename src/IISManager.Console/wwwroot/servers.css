@@ -1,0 +1,42 @@
+.administration-page { display: block; }
+.administration-main { width: 100%; max-width: 1500px; margin: 0 auto; padding: 28px 32px 48px; }
+.administration-page .page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.administration-page h1 { font-size: 27px; }
+.administration-page .workspace-card { margin-top: 22px; }
+.administration-page .section-header { padding: 20px 22px 14px; gap: 12px; }
+.administration-page .section-header p { font-size: 12px; line-height: 1.7; }
+.administration-toolbar { padding: 0 22px 18px; display: flex; justify-content: space-between; align-items: end; gap: 14px; }
+.administration-toolbar label { display: grid; gap: 7px; font-size: 12px; color: #657991; min-width: 250px; }
+.administration-toolbar p { white-space: nowrap; }
+.administration-banner { margin-top: 15px; }
+.administration-footnote { margin: 0; padding: 2px 22px 18px; font-size: 12px; line-height: 1.9; color: #72859c; }
+.administration-empty { padding: 24px; line-height: 1.9; }
+.managed-servers-table { min-width: 900px; }
+.managed-servers-table td, .policy-summary-table td { padding: 15px 22px; }
+.managed-server-address { overflow-wrap: anywhere; max-width: 360px; font-size: 12px; }
+.managed-server-state { display: grid; gap: 5px; font-size: 12px; }
+.managed-server-id { color: #7d8fa4; font-size: 11px; margin-top: 4px; }
+.administration-page .badge.warn { background: #fff2dc; color: #a17023; }
+.administration-dialog { width: min(760px, calc(100vw - 32px)); padding: 24px; }
+.administration-dialog > form > .muted { line-height: 1.8; }
+.administration-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.administration-form-grid label { display: grid; gap: 7px; color: #596e88; font-size: 12px; }
+.administration-form-grid .full-width { grid-column: 1 / -1; }
+.administration-preview { margin: 18px 0 0; padding: 16px; border: 1px solid #dce5f1; background: #f7f9fd; border-radius: 8px; }
+.administration-preview h3 { margin: 0 0 12px; font-size: 14px; }
+.administration-change { padding: 10px 0; border-top: 1px solid #e4eaf3; }
+.administration-change strong { display: block; color: #415c7d; font-size: 12px; margin-bottom: 6px; }
+.administration-change p { white-space: pre-wrap; margin: 4px 0; overflow-wrap: anywhere; font-size: 12px; line-height: 1.8; }
+.administration-change .change-before { color: #8a6370; }.administration-change .change-after { color: #356e55; }
+.policy-editor { width: min(980px, calc(100vw - 32px)); }
+.strict-policy-toggle { display: flex; gap: 9px; align-items: center; font-size: 13px; line-height: 1.9; margin: 16px 0; }
+.policy-editor .section-header { padding: 18px 0 10px; }.policy-editor h3 { font-size: 14px; margin: 0; }
+.principal-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; align-items: end; gap: 10px; padding: 12px; background: #f6f8fc; border-radius: 7px; margin: 8px 0; }
+.principal-row label, .grant-row label { display: grid; gap: 6px; color: #62768f; font-size: 12px; }
+.grant-row { display: grid; grid-template-columns: 90px minmax(120px, 1fr) minmax(170px, 1.4fr) minmax(130px, .8fr) auto; align-items: start; gap: 10px; padding: 13px; border: 1px solid #e2e8f1; border-radius: 7px; margin: 10px 0; }
+.grant-row select { min-height: 100px; }.grant-row .grant-flags { display: grid; gap: 9px; padding-top: 22px; }.grant-flags label { display: flex; align-items: center; gap: 6px; }
+.grant-row > button { margin-top: 22px; }.policy-summary-table { min-width: 700px; }
+.policy-scope { white-space: pre-wrap; overflow-wrap: anywhere; }
+.administration-page .main-nav a { white-space: nowrap; }
+@media (max-width: 1200px) { .administration-page .app-header .brand { width: 320px; font-size: 17px; } .administration-page .main-nav { gap: 6px; margin: 0 10px; } .administration-page .main-nav a { font-size: 14px; padding-left: 8px; padding-right: 8px; } }
+@media (max-width: 760px) { .administration-main { padding: 20px 14px 32px; } .administration-page h1 { font-size: 23px; } .administration-page .page-header { align-items: start; } .administration-toolbar { padding-left: 14px; padding-right: 14px; display: block; } .administration-toolbar label { min-width: 0; } .administration-page .section-header { padding: 18px 14px 14px; } .administration-dialog { padding: 18px; } .administration-form-grid { gap: 13px; } .administration-dialog .dialog-actions { flex-wrap: wrap; } .grant-row { grid-template-columns: 90px minmax(0, 1fr); } .grant-row label:has(select) { grid-column: 1 / -1; } .grant-row .grant-flags { grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); padding-top: 0; } .grant-row > button { margin-top: 0; } .principal-row { grid-template-columns: 85px minmax(0, 1fr); } .principal-row > button { grid-column: 2; justify-self: end; } .administration-page .app-header .brand { width: auto; } .administration-page .main-nav { width: 100%; justify-content: space-evenly; margin: 0 4px; } .administration-page .main-nav a { padding-left: 6px; padding-right: 6px; font-size: 12px; } }

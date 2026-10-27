@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/auth-login.css?v=8ed5cd171d7a506f">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script>
+  <script src="/auth-login.js?v=a1ab36b9ad53329a" defer></script>
+</head>
+<body class="login-page">
+  <aside class="login-brand" aria-label="MKY 服务器远程管理工具">
+    <div class="login-brand-header"><img src="/assets/auth/company-logo.png" class="company-logo" alt="摩快云公司 Logo" width="84" height="84"><div><p class="login-product-name">MKY 服务器远程管理工具</p><p class="login-product-caption">WINDOWS SERVER CONSOLE</p></div></div>
+    <div class="login-welcome"><h2>让服务器管理<br>井然有序</h2><p>站点、应用程序池与 Windows 服务，集中管理。</p></div>
+    <img class="login-illustration" src="/assets/auth/login-servers.png" alt="" width="1495" height="1052">
+    <footer class="login-brand-footer"><p>WINDOWS SERVER CONSOLE</p><span>更高效 · 更可控 · 更安全</span></footer>
+  </aside>
+  <main class="login-main">
+    <section class="login-form-shell" aria-labelledby="login-title">
+      <p class="login-eyebrow">管理工作台</p><h1 id="login-title">欢迎回来</h1><p class="login-intro">使用本应用账号登录，继续管理服务器</p>
+      <p id="login-message" class="login-message" role="status" aria-live="polite" hidden></p>
+      <form id="login-form" autocomplete="on">
+        <div class="login-field"><label for="login-account">账号</label><div class="login-input"><img src="/assets/fluent/person.svg" alt=""><input id="login-account" name="username" type="text" placeholder="请输入账号" autocomplete="username" maxlength="256" required spellcheck="false" autocapitalize="none"></div></div>
+        <div class="login-field"><label for="login-password">密码</label><div class="login-input"><img src="/assets/fluent/lock.svg" alt=""><input id="login-password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password" maxlength="128" required><button id="login-password-toggle" type="button" class="password-toggle" aria-label="显示密码" aria-pressed="false"><img id="login-password-eye" src="/assets/fluent/eye.svg" alt=""></button></div></div>
+        <button id="login-submit" class="login-submit" type="submit" disabled>登录管理工作台</button>
+      </form>
+      <p class="login-help">忘记密码请联系管理员</p>
+      <noscript><p class="login-message">请启用浏览器 JavaScript 后登录。</p></noscript>
+    </section>
+  </main>
+</body>
+</html>

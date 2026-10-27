@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>故障诊断 · MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/app.css?v=7283488e6150963f">
+  <link rel="stylesheet" href="/diagnostics.css?v=2b12f0a3c2abd4ea">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script>
+  <script src="/freb.js?v=c189a7db334d90b3" defer></script>
+  <script src="/diagnostics.js?v=6112d1628e2de606" defer></script>
+</head>
+<body class="diagnostics-page">
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html">服务器总览</a><a href="/">管理工作台</a><a href="/maintenance.html">配置维护</a><a href="/diagnostics.html" aria-current="page">故障诊断</a><a href="/baselines.html">配置基线</a><a href="/operations.html">操作记录</a><a href="/servers.html">接入与权限</a></nav>
+    <span class="header-caption">Windows Server 管理控制台</span>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <main>
+    <header class="page-header"><div><p class="breadcrumb">管理控制台 / 服务器诊断</p><h1>故障诊断</h1><p class="muted">查看本机资源、工作进程和近期错误摘要</p></div><button id="diagnostics-export" type="button" class="secondary" disabled>导出脱敏 JSON</button></header>
+    <section class="workspace-card diagnostic-toolbar" aria-label="诊断服务器选择">
+      <label for="diagnostics-server">Agent 服务器<select id="diagnostics-server"></select></label>
+      <label class="diagnostic-auto" for="diagnostics-auto"><input id="diagnostics-auto" type="checkbox">每 15 秒刷新</label>
+      <button id="diagnostics-refresh" type="button" class="secondary">刷新诊断</button>
+    </section>
+    <div id="notice" class="notice danger" role="alert" hidden></div>
+    <p id="diagnostics-updated" class="muted small" role="status" aria-live="polite">正在读取服务器…</p>
+    <section class="workspace-card diagnostic-section" aria-labelledby="diagnostics-status-title"><h2 id="diagnostics-status-title">采集状态</h2><ul id="diagnostics-modules" class="diagnostic-modules" aria-live="polite"></ul><p class="muted small">首次采样没有 CPU 增量；等待缓存期后再次刷新。不可用项不会显示为零。</p></section>
+    <section class="workspace-card diagnostic-section" aria-labelledby="diagnostics-resources-title"><h2 id="diagnostics-resources-title">服务器资源</h2><div id="diagnostics-resources" class="diagnostic-content"></div></section>
+    <section class="workspace-card diagnostic-section" aria-labelledby="diagnostics-processes-title"><h2 id="diagnostics-processes-title">应用池与可管理服务进程</h2><div class="diagnostic-process-search"><label class="sr-only" for="diagnostics-search">搜索名称或 PID</label><input id="diagnostics-search" type="search" placeholder="搜索应用池、服务名称或 PID" autocomplete="off" maxlength="128"></div><div id="diagnostics-processes" class="diagnostic-content"></div><p class="muted small">CPU 按逻辑处理器总量归一化；PID 与启动时间一起识别进程，回收或进程替换后重新采样。服务共享进程时可能出现相同 PID。</p></section>
+    <section class="workspace-card diagnostic-section" aria-labelledby="diagnostics-events-title"><h2 id="diagnostics-events-title">近期 Windows 关键事件</h2><div id="diagnostics-events" class="diagnostic-content"></div><p class="muted small">仅采样最近 24 小时的限定提供程序，最多 50 条。只显示时间、日志、事件编号和固定摘要，详细原因请在服务器事件查看器按编号核对。</p></section>
+    <section class="workspace-card diagnostic-section" aria-labelledby="diagnostics-iis-title"><h2 id="diagnostics-iis-title">IIS 4xx / 5xx 错误摘要</h2><div id="diagnostics-iis" class="diagnostic-content"></div><p class="muted small">只聚合站点配置的本机 W3C 日志尾部，最多 32 个站点，每站点最多 2 个文件，合计读取预算 8 MiB。采样不等于全量访问日志；不返回请求路径、查询参数、Cookie、账号或原始日志。</p></section>
+    <section class="workspace-card diagnostic-section" aria-labelledby="freb-title">
+      <div class="freb-heading"><div><h2 id="freb-title">FREB 请求级失败跟踪</h2><p class="muted small">按请求查看失败状态、模块和管线事件；只读取服务器已生成的跟踪。</p></div><div class="freb-actions"><button id="freb-refresh" type="button" class="secondary">刷新请求跟踪</button><button id="freb-export" type="button" class="secondary" disabled>导出脱敏跟踪</button></div></div>
+      <div class="freb-filters"><label for="freb-site">站点<select id="freb-site"><option value="">全部站点</option></select></label><label for="freb-state-filter">请求状态<select id="freb-state-filter"><option value="">全部状态</option><option value="5xx">HTTP 5xx</option><option value="4xx">HTTP 4xx</option></select></label><span id="freb-count" class="muted small"></span></div>
+      <p id="freb-updated" class="muted small" role="status" aria-live="polite"></p><p id="freb-error" class="notice danger" role="alert" hidden></p><div id="freb-results"></div><p id="freb-empty" class="muted"></p>
+      <p class="muted small">跟踪编号仅用于本次诊断关联。不展示原始 URL、请求头、正文或 XML；完整请求内容由操作员在服务器受限目录核对。尚未启用 FREB 的站点需人工开启并配置规则，本工具不会修改 IIS 跟踪设置。</p>
+    </section>
+  </main>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form"><div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div><p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p><div class="password-fields"><label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label><label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-length-hint" required><span id="password-length-hint" class="muted small">请输入12–128个字符</span></label><label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label></div><label class="password-visibility" for="password-visible"><input id="password-visible" type="checkbox">显示密码</label><p id="password-message" class="notice danger" role="alert" hidden></p><div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div></form>
+  </dialog>
+</body>
+</html>

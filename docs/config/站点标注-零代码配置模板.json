@@ -1,0 +1,12 @@
+{
+  "Console": {
+    "SiteAnnotations": {
+      "Enabled": false,
+      "ApplicationId": 1001,
+      "OpenApiBaseUrl": "",
+      "OpenApiAppId": "",
+      "PublicKeyBase64": "",
+      "TimeoutSeconds": 30
+    }
+  }
+}

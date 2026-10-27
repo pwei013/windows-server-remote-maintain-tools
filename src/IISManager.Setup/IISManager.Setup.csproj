@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>IISManager.Setup</AssemblyName>
+    <Version>1.0.5</Version>
+    <FileVersion>1.0.5.0</FileVersion>
+    <InformationalVersion>1.0.5</InformationalVersion>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <InstallerPayloadDirectory Condition="'$(InstallerPayloadDirectory)' == ''">$(MSBuildProjectDirectory)/../../work/installer-payload</InstallerPayloadDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../IISManager.Setup.Core/IISManager.Setup.Core.csproj" />
+    <EmbeddedResource Include="$(InstallerPayloadDirectory)/Agent.zip" LogicalName="IISManager.Setup.Payload.Agent.zip" />
+    <EmbeddedResource Include="$(InstallerPayloadDirectory)/Console.zip" LogicalName="IISManager.Setup.Payload.Console.zip" />
+  </ItemGroup>
+  <Target Name="RequireInstallerPayloads" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(InstallerPayloadDirectory)/Agent.zip') Or !Exists('$(InstallerPayloadDirectory)/Console.zip')" Text="Generate installer payloads before building IISManager.Setup." />
+  </Target>
+</Project>

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IISManager.Agent/IISManager.Agent.csproj" />
+    <Project Path="src/IISManager.Console/IISManager.Console.csproj" />
+    <Project Path="src/IISManager.Contracts/IISManager.Contracts.csproj" />
+    <Project Path="src/IISManager.Core/IISManager.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IISManager.SelfTests/IISManager.SelfTests.csproj" />
+    <Project Path="tests/IISManager.Transport.SelfTests/IISManager.Transport.SelfTests.csproj" />
+  </Folder>
+</Solution>

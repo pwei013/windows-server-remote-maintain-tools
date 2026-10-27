@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>站点配置维护 · MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/app.css?v=cc1a13fa8969145c"><link rel="stylesheet" href="/maintenance.css?v=0cdd4e26047b90e5">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script><script src="/maintenance.js?v=b3e275ae6b8d672d" defer></script>
+</head>
+<body class="maintenance-page">
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html">服务器总览</a><a href="/">管理工作台</a><a href="/maintenance.html" aria-current="page">配置维护</a><a href="/diagnostics.html">故障诊断</a><a href="/baselines.html">配置基线</a><a href="/operations.html">操作记录</a><a href="/servers.html">接入与权限</a></nav>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <main class="maintenance-main">
+    <header class="page-header"><div><p class="breadcrumb">管理控制台 / IIS 配置维护</p><h1>站点配置维护</h1><p class="muted">维护已有站点、子应用与虚拟目录，先预检查，再确认提交</p></div><button id="maintenance-refresh" type="button" class="secondary">刷新资源</button></header>
+    <p id="notice" class="notice danger" role="alert" hidden></p>
+    <p id="maintenance-permission" class="notice" role="status" hidden></p>
+    <p class="maintenance-safety">维护前，站点及全部原关联池和新关联池须已停止。请在工作台核对共享池的影响范围并人工处理；本页不隐式启停，不创建目录、不复制文件、不修改权限或导入证书。</p>
+    <section class="workspace-card maintenance-card" aria-labelledby="maintenance-target-title">
+      <h2 id="maintenance-target-title">选择维护目标</h2>
+      <form id="maintenance-form">
+        <div class="maintenance-grid">
+          <label>服务器<select id="maintenance-server" required></select></label>
+          <label>站点<select id="maintenance-site" required></select></label>
+          <label>维护内容<select id="maintenance-action"><option value="site.update">编辑站点根应用与绑定</option><option value="application.create">创建子应用</option><option value="application.update">编辑子应用</option><option value="virtualDirectory.create">创建虚拟目录</option><option value="virtualDirectory.update">编辑虚拟目录</option></select></label>
+          <label id="maintenance-application-field" hidden>所属应用<select id="maintenance-application"></select></label>
+          <label id="maintenance-new-application-field" hidden>新应用路径<input id="maintenance-new-application" type="text" maxlength="512" placeholder="/api" autocomplete="off"><span class="muted small">以 / 开头；不允许根应用、末尾 / 或编码路径</span></label>
+          <label id="maintenance-directory-field" hidden>虚拟目录<select id="maintenance-directory"></select></label>
+          <label id="maintenance-new-directory-field" hidden>新目录路径<input id="maintenance-new-directory" type="text" maxlength="512" placeholder="/assets" autocomplete="off"><span class="muted small">相对所属应用，例如 /api 下的 /assets</span></label>
+        </div>
+        <p id="maintenance-current" class="muted small" role="status"></p>
+        <fieldset id="maintenance-physical-field"><legend><label class="maintenance-checkbox"><input id="maintenance-change-physical" type="checkbox">修改物理目录</label></legend><label for="maintenance-physical">已存在的本机绝对目录<input id="maintenance-physical" type="text" maxlength="2048" autocomplete="off" placeholder="D:\Sites\Application"><span class="muted small">须位于 Agent 的允许根目录，目录链不能含符号链接或联接；留在未勾选状态可保留原值。</span></label></fieldset>
+        <fieldset id="maintenance-pool-field"><legend><label class="maintenance-checkbox"><input id="maintenance-change-pool" type="checkbox">修改应用池</label></legend><label for="maintenance-pool">关联已有应用池<select id="maintenance-pool"></select></label><p id="maintenance-pool-impact" class="muted small"></p></fieldset>
+        <div id="maintenance-inherited-pool" class="notice" hidden><p>虚拟目录继承所属应用的应用池：<strong id="maintenance-inherited-pool-name"></strong>。虚拟目录本身没有独立应用池。</p><p class="muted small">编辑时可在本页勾选“修改应用池”，与物理目录一起预检查并提交；池变更影响所属应用及其全部虚拟目录。创建目录时沿用所属应用的现有池。</p></div>
+        <fieldset id="maintenance-bindings-field"><legend><label class="maintenance-checkbox"><input id="maintenance-change-bindings" type="checkbox">修改站点绑定</label></legend><p class="muted small">勾选后提交下面完整绑定集合；未勾选时保留全部原绑定。共享或外部 TLS 记录、高级 SSL 策略会被拒绝，防止影响其它站点。</p><div id="maintenance-bindings" class="maintenance-bindings"></div><button id="maintenance-add-binding" type="button" class="secondary">添加绑定</button></fieldset>
+        <div class="dialog-actions"><button id="maintenance-precheck" type="submit">预检查并查看差异</button></div>
+      </form>
+    </section>
+    <section id="maintenance-preview" class="workspace-card maintenance-card" hidden aria-labelledby="maintenance-preview-title">
+      <h2 id="maintenance-preview-title">预检查方案</h2><p id="maintenance-validity" role="status"></p>
+      <div class="table-scroll"><table class="maintenance-changes"><thead><tr><th>字段</th><th>修改前</th><th>修改后</th></tr></thead><tbody id="maintenance-changes"></tbody></table></div>
+      <h3>受影响站点与应用</h3><ul id="maintenance-affected"></ul><ul id="maintenance-warnings" class="maintenance-warnings"></ul><ul id="maintenance-errors" class="maintenance-errors"></ul>
+      <label class="maintenance-checkbox"><input id="maintenance-confirm" type="checkbox">我已核对差异、共享资源及停止状态，确认提交本次配置维护</label>
+      <div class="dialog-actions"><button id="maintenance-submit" type="button" disabled>确认提交</button></div>
+    </section>
+    <section id="maintenance-task" class="workspace-card maintenance-card" hidden aria-labelledby="maintenance-task-title">
+      <h2 id="maintenance-task-title">本次操作与结果核对</h2><p id="maintenance-task-status" role="status"></p><p class="muted small">结果未知或部分完成时保留原编号并锁定写入，只读核对现场；不会自动重放或回滚。</p><code id="maintenance-operation-id"></code><p><a id="maintenance-record-link" href="/operations.html">查看操作记录</a></p>
+      <div class="maintenance-query"><label>服务器编号<input id="maintenance-query-server" maxlength="64" autocomplete="off"></label><label>原操作编号<input id="maintenance-query-id" maxlength="36" autocomplete="off"></label><button id="maintenance-query" type="button" class="secondary">按原编号只读核对</button></div><pre id="maintenance-task-result" class="maintenance-result"></pre>
+    </section>
+  </main>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form"><div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div><p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p><div class="password-fields"><label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label><label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><span class="muted small">请输入12–128个字符</span></label><label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label></div><label class="password-visibility"><input id="password-visible" type="checkbox">显示密码</label><p id="password-message" class="notice danger" role="alert" hidden></p><div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div></form>
+  </dialog>
+</body>
+</html>

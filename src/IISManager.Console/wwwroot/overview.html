@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>服务器总览 · MKY 服务器远程管理工具</title>
+  <link rel="icon" type="image/png" href="/assets/auth/company-logo.png">
+  <link rel="stylesheet" href="/app.css?v=7283488e6150963f">
+  <link rel="stylesheet" href="/overview.css?v=7c84fae5ac727df7">
+  <script src="/auth-session.js?v=d44bec983677eafc" defer></script>
+  <script src="/overview.js?v=11837962a6f4acc7" defer></script>
+</head>
+<body class="overview-page">
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MKY 服务器远程管理工具首页"><img class="brand-logo" src="/assets/auth/company-logo.png" alt="摩快云公司 Logo" width="44" height="44"><span>MKY 服务器远程管理工具<span class="small">WINDOWS SERVER CONSOLE</span></span></a>
+    <nav class="main-nav" aria-label="主菜单"><a href="/overview.html" aria-current="page">服务器总览</a><a href="/">管理工作台</a><a href="/maintenance.html">配置维护</a><a href="/diagnostics.html">故障诊断</a><a href="/baselines.html">配置基线</a><a href="/operations.html">操作记录</a><a href="/servers.html">接入与权限</a></nav>
+    <span class="header-caption">Windows Server 管理控制台</span>
+    <div id="session-user" class="header-user" hidden><span id="session-user-name"></span><button id="session-change-password" type="button">修改密码</button><button id="session-logout" type="button">退出登录</button></div>
+  </header>
+  <main class="overview-main">
+    <header class="page-header overview-header"><div><p class="breadcrumb">管理控制台 / 所有服务器</p><h1>服务器总览</h1><p class="muted">集中查看连接、业务检查与证书状态</p></div><div class="page-actions"><label class="auto-refresh"><input id="overview-auto" type="checkbox">每 30 秒刷新</label><button id="overview-refresh" class="secondary" type="button"><img class="ui-icon" src="/assets/fluent/refresh.svg" alt="">刷新总览</button></div></header>
+    <div id="notice" class="notice danger" role="alert" hidden></div>
+    <p id="overview-updated" class="overview-updated muted small" role="status" aria-live="polite">正在读取服务器总览…</p>
+    <section id="overview-summary" class="summary-grid" aria-label="所有服务器状态统计"></section>
+    <nav class="overview-jump" aria-label="总览内容导航"><a href="#servers-section">服务器资源</a><a href="#health-section">业务健康检查</a><a href="#certificates-section">证书预警</a></nav>
+    <section id="servers-section" class="workspace-card overview-section" aria-labelledby="servers-title">
+      <div class="section-header"><div><h2 id="servers-title">服务器资源</h2><p id="servers-count" class="muted">读取中…</p></div></div>
+      <div class="overview-filters server-filters"><div class="filter-field overview-search"><label for="overview-search">全局搜索</label><div class="search-control"><img class="ui-icon" src="/assets/fluent/search.svg" alt=""><input id="overview-search" type="search" placeholder="服务器、项目、环境、站点或域名" autocomplete="off" maxlength="128"></div></div><div class="filter-field"><label for="server-group">项目分组</label><select id="server-group"><option value="">全部项目</option></select></div><div class="filter-field"><label for="server-environment">环境</label><select id="server-environment"><option value="">全部环境</option></select></div><div class="filter-field"><label for="server-state">连接状态</label><select id="server-state"><option value="">全部状态</option><option value="online">连接正常</option><option value="partial">部分读取失败</option><option value="offline">无法连接</option></select></div><button id="overview-reset" type="button" class="secondary">重置筛选</button></div>
+      <div class="server-view-tools"><label><input id="server-favorites-only" type="checkbox">仅看收藏服务器</label><span class="muted small">收藏与筛选保存在当前用户的浏览器中</span></div>
+      <div id="overview-servers" class="server-grid" aria-live="polite"></div><p id="servers-empty" class="empty" hidden>没有匹配的服务器。</p>
+    </section>
+    <section id="health-section" class="workspace-card overview-section" aria-labelledby="health-title">
+      <div class="section-header"><div><h2 id="health-title">业务健康检查</h2><p class="muted">在对应服务器上访问已配置的只读检查地址</p></div><button id="health-add" type="button"><img class="ui-icon" src="/assets/fluent/add.svg" alt="">新增检查</button></div>
+      <div class="overview-filters compact-filters"><p id="health-count" class="muted small" role="status"></p><div class="filter-field"><label for="health-filter">检查状态</label><select id="health-filter"><option value="">全部检查</option><option value="issues">异常检查</option><option value="enabled">已启用</option><option value="disabled">已停用</option></select></div></div><p id="health-unavailable" class="notice danger overview-footnote" role="alert" hidden></p>
+      <div class="table-scroll"><table class="health-table"><caption class="sr-only">站点及子应用健康检查</caption><thead><tr><th scope="col">服务器 / 站点 / 应用</th><th scope="col">检查地址</th><th scope="col">最近结果</th><th scope="col">最近检查 / 成功</th><th scope="col">操作</th></tr></thead><tbody id="health-body"></tbody></table></div><p id="health-empty" class="empty" hidden>尚未配置健康检查，可为站点或子应用添加检查地址。</p>
+      <p class="overview-footnote">停用时不会发起检查；已启用的检查可手动立即执行。检查结果与 IIS 启停结果分别显示。</p>
+    </section>
+    <section id="certificates-section" class="workspace-card overview-section" aria-labelledby="certificates-title">
+      <div class="section-header"><div><h2 id="certificates-title">证书预警</h2><p class="muted">提前 30 / 15 / 7 天提示，展示关联站点和域名</p></div><div class="filter-field"><label class="sr-only" for="certificate-filter">证书状态</label><select id="certificate-filter"><option value="alerts">仅显示预警</option><option value="">全部证书</option><option value="expired">已过期</option><option value="critical">7 天内到期</option><option value="warning">15 天内到期</option><option value="notice">30 天内到期</option><option value="notYetValid">尚未生效</option><option value="missing">绑定证书缺失</option></select></div></div>
+      <p id="certificates-count" class="overview-footnote" role="status"></p>
+      <div class="table-scroll"><table class="certificates-table"><caption class="sr-only">证书有效期及关联站点</caption><thead><tr><th scope="col">证书 / 服务器</th><th scope="col">状态</th><th scope="col">有效期至</th><th scope="col">关联站点 / 域名</th></tr></thead><tbody id="certificates-body"></tbody></table></div><p id="certificates-empty" class="empty" hidden>没有匹配的证书预警。</p>
+      <p class="overview-footnote">证书列表来自各 Agent 最近一次成功读取；读取失败的服务器会在资源卡片中提示。</p>
+    </section>
+  </main>
+  <dialog id="server-diagnostics-dialog" class="health-dialog" aria-labelledby="server-diagnostics-title">
+    <div class="dialog-header"><h2 id="server-diagnostics-title">连接诊断</h2><button id="server-diagnostics-close" type="button" class="icon-button" aria-label="关闭连接诊断">×</button></div>
+    <dl id="server-diagnostics-details" class="task-details"></dl><div id="server-diagnostics-errors"></div><p id="server-diagnostics-empty" class="muted small"></p>
+    <div class="dialog-actions"><a id="server-diagnostics-resources" href="/diagnostics.html" class="button-link secondary">资源与故障诊断</a><a id="server-diagnostics-workbench" href="/" class="button-link secondary">管理工作台</a><button id="server-diagnostics-retry" type="button">重试本台</button></div>
+  </dialog>
+  <dialog id="health-dialog" class="health-dialog" aria-labelledby="health-dialog-title" aria-describedby="health-form-description">
+    <form id="health-form"><div class="dialog-header"><h2 id="health-dialog-title">新增健康检查</h2><button id="health-close" type="button" class="icon-button" aria-label="关闭健康检查编辑">×</button></div>
+      <p id="health-form-description" class="muted small">选择站点或子应用，并填写不会修改业务数据的检查地址。</p>
+      <div class="health-form-grid"><label for="health-server">服务器<select id="health-server" required></select></label><label for="health-site">站点<select id="health-site" required></select></label><label class="full-width" for="health-application">应用<select id="health-application" required></select></label><label class="full-width" for="health-url">检查地址<input id="health-url" type="url" required maxlength="2048" placeholder="https://example.com/app/health" aria-describedby="health-url-hint"><span id="health-url-hint" class="muted small">使用当前站点绑定和应用路径，不支持带账号、查询参数或片段的地址。</span></label><label for="health-status">期望 HTTP 状态码<input id="health-status" type="number" min="200" max="299" value="200" required></label><label for="health-timeout">超时（秒）<input id="health-timeout" type="number" min="1" max="15" value="5" required></label><label for="health-interval">检查间隔（秒）<input id="health-interval" type="number" min="30" max="3600" value="60" required></label><label class="health-enabled" for="health-enabled"><input id="health-enabled" type="checkbox">启用定时检查</label></div>
+      <p id="health-form-error" class="notice danger" role="alert" hidden></p><div class="dialog-actions"><button id="health-cancel" class="secondary" type="button">取消</button><button id="health-save" type="submit">保存检查</button></div>
+    </form>
+  </dialog>
+  <dialog id="health-delete-dialog" class="health-delete-dialog" aria-labelledby="health-delete-title"><div class="dialog-header"><h2 id="health-delete-title">删除健康检查</h2></div><p id="health-delete-description"></p><p class="muted small">删除配置后将停止定时检查，站点和应用本身不会被更改。</p><p id="health-delete-error" class="notice danger" role="alert" hidden></p><div class="dialog-actions"><button id="health-delete-cancel" type="button" class="secondary">取消</button><button id="health-delete-confirm" type="button">确认删除</button></div></dialog>
+  <dialog id="password-dialog" aria-labelledby="password-dialog-title" aria-describedby="password-dialog-description">
+    <form id="password-form"><div class="dialog-header"><h2 id="password-dialog-title">修改密码</h2><button id="password-close" type="button" class="icon-button" aria-label="关闭修改密码">×</button></div><p id="password-dialog-description" class="muted small">修改成功后，您的所有登录会话将失效，请使用新密码重新登录。</p><div class="password-fields"><label for="password-old">原密码<input id="password-old" type="password" autocomplete="current-password" maxlength="128" required></label><label for="password-new">新密码<input id="password-new" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="password-length-hint" required><span id="password-length-hint" class="muted small">请输入12–128个字符</span></label><label for="password-confirm">确认新密码<input id="password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label></div><label class="password-visibility" for="password-visible"><input id="password-visible" type="checkbox">显示密码</label><p id="password-message" class="notice danger" role="alert" hidden></p><div class="dialog-actions"><button id="password-cancel" type="button" class="secondary">取消</button><button id="password-relogin" type="button" class="secondary" hidden>退出并重新登录</button><button id="password-submit" type="submit">确认修改</button></div></form>
+  </dialog>
+</body>
+</html>
